@@ -1,0 +1,7 @@
+modify:
+  model:
+    - name: "User"
+      source: "./internal/user/repository/postgresql/models.go"
+      destination: "./internal/models/user.go"
+      package: "models"
+      package_path: "github.com/aliml92/searchfeed/internal/models"

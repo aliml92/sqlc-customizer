@@ -1,6 +1,5 @@
 /*
 Copyright © 2023 NAME HERE <EMAIL ADDRESS>
-
 */
 package cmd
 
@@ -8,11 +7,15 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/aliml92/sqlc-customizer/pkg/customizer"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
-var cfgFile string
+var (
+	cfgFile 	string
+	cust        *customizer.Customizer
+)
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -59,13 +62,14 @@ func initConfig() {
 		viper.SetConfigFile(cfgFile)
 	} else {
 		// Find home directory.
-		home, err := os.UserHomeDir()
+		// home, err := homedir.Dir()
+		currentDir, err := os.Getwd()
 		cobra.CheckErr(err)
 
 		// Search config in home directory with name ".sqlc-customize" (without extension).
-		viper.AddConfigPath(home)
+		viper.AddConfigPath(currentDir)
 		viper.SetConfigType("yaml")
-		viper.SetConfigName(".sqlc-customize")
+		viper.SetConfigName("sqlc-customize")
 	}
 
 	viper.AutomaticEnv() // read in environment variables that match
@@ -73,5 +77,10 @@ func initConfig() {
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
+	}
+	cust = &customizer.Customizer{}
+	if err := viper.Unmarshal(&cust.Config); err != nil {
+		fmt.Fprintln(os.Stderr, "Error parsing config file:", err)
+		os.Exit(1)
 	}
 }

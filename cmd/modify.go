@@ -1,12 +1,14 @@
 /*
 Copyright © 2023 NAME HERE <EMAIL ADDRESS>
-
 */
 package cmd
 
 import (
 	"fmt"
+	"os"
+	"path"
 
+	"github.com/aliml92/sqlc-customizer/pkg/util"
 	"github.com/spf13/cobra"
 )
 
@@ -22,6 +24,63 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("modify called")
+		// 1. modify models
+		for _, model := range cust.Config.Modify.Models {
+			name := model.Name
+			source := model.Source
+			destination := model.Destination
+			packageName := model.Package
+			packagePath := model.PackagePath
+
+			// do better config validation here before proceeding in the future
+
+			// 1.1. check if source file exists
+			if !util.FileExists(source) {
+				fmt.Printf("source file %s does not exist\n", source)
+				continue
+			}
+			// 1.2. check if destination file exists
+			if util.FileExists(destination) {
+				fmt.Printf("destination file %s already exists\n", destination)
+				continue
+			}
+
+			// 1.3. move source file to destination file
+			if err := util.MoveFile(source, destination); err != nil {
+				fmt.Printf("failed to move file %s to %s: %v\n", source, destination, err)
+				continue
+			}
+
+			// 1.4. modify package name in destination file
+			if err := util.OverridePackageName(destination, packageName, "db"); err != nil {
+				fmt.Printf("failed to override package name in %s: %v\n", destination, err)
+				continue
+			}
+
+			directory := path.Dir(source)
+			files, err := os.ReadDir(directory)
+			if err != nil {
+				fmt.Printf("failed to read directory %s: %v\n", directory, err)
+				continue
+			}
+			for _, file := range files {
+				file := path.Join(directory, file.Name())
+				newWord := packageName + "." + name
+				n, err := util.OverrideStuct(file, name, newWord)
+				if err != nil {
+					fmt.Printf("failed to override struct name %s in %s: %v\n", name, file, err)
+					continue
+				}
+				if n == 0 {
+					continue
+				}
+				
+				if err := util.AppendImportEntry(file, packagePath); err != nil {
+					fmt.Printf("failed to append import entry %s in %s: %v\n", packagePath, file, err)
+					continue
+				}
+			}
+		}
 	},
 }
 
