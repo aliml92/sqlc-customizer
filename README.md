@@ -23,4 +23,4 @@ tasks:
       - sqlc-customizer modify
 ```
 
-For more understanding, see [examples]()
+For more understanding, see [examples](https://github.com/aliml92/sqlc-customizer/tree/cb417ddf1e3913bad8c110bbf779093b76c02727/examples/clean-arch)
