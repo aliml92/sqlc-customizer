@@ -14,6 +14,7 @@ type Model struct {
 	Source 		string	`mapstructure:"source"`
 	Destination string	`mapstructure:"destination"`
 	Package 	string	`mapstructure:"package"`
+	OldPackage	string	`mapstructure:"old_package"`
 	PackagePath	string	`mapstructure:"package_path"`
 }
 

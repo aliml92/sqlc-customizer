@@ -30,6 +30,7 @@ to quickly create a Cobra application.`,
 			source := model.Source
 			destination := model.Destination
 			packageName := model.Package
+			oldPackageName := model.OldPackage
 			packagePath := model.PackagePath
 
 			// do better config validation here before proceeding in the future
@@ -52,7 +53,7 @@ to quickly create a Cobra application.`,
 			}
 
 			// 1.4. modify package name in destination file
-			if err := util.OverridePackageName(destination, packageName, "db"); err != nil {
+			if err := util.OverridePackageName(destination, packageName, oldPackageName); err != nil {
 				fmt.Printf("failed to override package name in %s: %v\n", destination, err)
 				continue
 			}
