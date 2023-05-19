@@ -9,7 +9,9 @@ modify:
       source: "./internal/user/repository/postgresql/models.go"
       destination: "./internal/models/user.go"
       package: "models"
+      old_package: "db"
       package_path: "github.com/aliml92/{project_name}/internal/models"
+      json_omitempty: true
 ```      
 Since it changes sqlc code, it is better to run right after `sqlc generate` command:
 ```yaml
