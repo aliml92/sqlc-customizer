@@ -187,3 +187,49 @@ func AppendImportEntry(filePath string, newImportPath string) error {
 func insertSlice(slice, insertion []byte, index int) []byte {
 	return append(slice[:index], append(insertion, slice[index:]...)...)
 }
+
+func AppendOmitempty(filePath string) (int, error) {
+	file, err := os.OpenFile(filePath, os.O_RDWR, 0644)
+	if err != nil {
+		return 0, err
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	var (
+		modifiedLines []string
+		overrideCount int
+	)
+
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		lastIndex := -1
+		if strings.Contains(line, "json:") {
+			lastIndex = strings.LastIndex(line, "\"")
+			if lastIndex > 0 {
+				line = line[:lastIndex] + ",omitempty" + line[lastIndex:]
+				modifiedLines = append(modifiedLines, line)
+				overrideCount++
+				continue
+			}
+		}
+		modifiedLines = append(modifiedLines, line)
+		continue
+	}
+
+	if err := scanner.Err(); err != nil {
+		return 0, err
+	}
+
+	// Truncate the file and write the modified contents back
+	file.Truncate(0)
+	file.Seek(0, 0)
+	writer := bufio.NewWriter(file)
+	for _, line := range modifiedLines {
+		fmt.Fprintln(writer, line)
+	}
+	writer.Flush()
+
+	return overrideCount, nil
+}

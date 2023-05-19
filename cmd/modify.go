@@ -32,6 +32,7 @@ to quickly create a Cobra application.`,
 			packageName := model.Package
 			oldPackageName := model.OldPackage
 			packagePath := model.PackagePath
+			jsonOmitempty := model.JSONOmitempty
 
 			// do better config validation here before proceeding in the future
 
@@ -42,8 +43,11 @@ to quickly create a Cobra application.`,
 			}
 			// 1.2. check if destination file exists
 			if util.FileExists(destination) {
-				fmt.Printf("destination file %s already exists\n", destination)
-				continue
+				// delete it
+				if err := os.Remove(destination); err != nil {
+					fmt.Printf("failed to remove file %s: %v\n", destination, err)
+					continue
+				}
 			}
 
 			// 1.3. move source file to destination file
@@ -56,6 +60,12 @@ to quickly create a Cobra application.`,
 			if err := util.OverridePackageName(destination, packageName, oldPackageName); err != nil {
 				fmt.Printf("failed to override package name in %s: %v\n", destination, err)
 				continue
+			}
+			if jsonOmitempty {
+				_, err := util.AppendOmitempty(destination)
+				if err != nil {
+					fmt.Printf("failed to append omitempty in %s: %v\n", destination, err)
+				}	
 			}
 
 			directory := path.Dir(source)
